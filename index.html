@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sun Myung Moon &amp; Hak Ja Han Moon — interactive map of events, 1920–2025</title>
+<meta name="description" content="Interactive map of 4,900+ geolocated events from the lives of the founders of the Unification Movement. Open dataset under CC BY-SA 4.0.">
+
+<!-- Open Graph / social preview -->
+<meta property="og:title" content="True Parents — interactive event map, 1920–2025">
+<meta property="og:description" content="Where Sun Myung Moon and Hak Ja Han Moon lived and ministered. Open dataset, 279 sites, 4,900+ events.">
+<meta property="og:type" content="website">
+
+<!-- Leaflet CSS — loaded eagerly here for a standalone demo; in production you may want to lazy-load -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin="">
+
+<style>
+  :root {
+    --accent: #5E35B1;
+    --text:   #212121;
+    --muted:  #5F6368;
+    --line:   #E0E0E0;
+    --bg:     #FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.5;
+  }
+  .tpl-map-block { max-width: 1100px; margin: 32px auto; padding: 0 20px; }
+  .tpl-map-eyebrow {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px;
+    color: var(--muted); margin: 0 0 8px;
+  }
+  .tpl-map-title {
+    font-size: clamp(22px, 3vw, 30px); font-weight: 500;
+    margin: 0 0 8px; color: var(--text); line-height: 1.25;
+  }
+  .tpl-map-subtitle {
+    font-size: 15px; color: var(--muted); margin: 0 0 24px; max-width: 680px;
+  }
+  .tpl-map-link { color: var(--accent); text-decoration: none; border-bottom: 1px solid currentColor; }
+  .tpl-map-link:hover { opacity: 0.8; }
+
+  .tpl-map-controls {
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    padding: 8px 0; margin-bottom: 4px;
+  }
+  .tpl-map-controls-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--muted); margin-right: 8px; min-width: 56px;
+  }
+  .tpl-map-chip {
+    font: inherit; font-size: 13px;
+    padding: 6px 12px; border-radius: 999px;
+    border: 1px solid var(--line); background: #FAFAFA;
+    color: var(--text); cursor: pointer;
+    transition: background 150ms, border-color 150ms, color 150ms;
+  }
+  .tpl-map-chip:hover { background: #F0EBFA; border-color: #C5B3E8; }
+  .tpl-map-chip.on {
+    background: var(--accent); border-color: var(--accent); color: #FFFFFF;
+  }
+
+  .tpl-map {
+    position: relative;
+    height: 540px; margin-top: 16px;
+    border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .tpl-map-status, .tpl-map-empty {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: var(--muted); background: #FAFAFA;
+    z-index: 500;
+  }
+  .tpl-map-empty[hidden] { display: none; }
+
+  .tpl-map-footer {
+    margin-top: 14px; font-size: 13px; color: var(--muted); line-height: 1.5;
+  }
+  .tpl-map-accent { color: var(--accent); }
+  .tpl-map-credit {
+    margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);
+    font-size: 12px; color: var(--muted);
+  }
+  .tpl-map-credit a { color: var(--accent); text-decoration: none; }
+  .tpl-map-credit a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<section class="tpl-map-block">
+  <header>
+    <p class="tpl-map-eyebrow">Interactive map · Sun Myung Moon &amp; Hak Ja Han Moon timeline</p>
+    <h1 class="tpl-map-title">Where True Parents lived and ministered, 1920–2025</h1>
+    <p class="tpl-map-subtitle">
+      <span id="tpl-summary">Loading dataset…</span>
+      Marker size ∝ event count for the active filters.
+      For dates, descriptions, and source citations, see the
+      <a href="https://tplegacy.net/timeline/" class="tpl-map-link">complete timeline</a>.
+    </p>
+  </header>
+
+  <div id="tpl-map-controls-decade" class="tpl-map-controls" data-row="decade">
+    <span class="tpl-map-controls-label">Decade</span>
+  </div>
+
+  <div id="tpl-map-controls-type" class="tpl-map-controls" data-row="type">
+    <span class="tpl-map-controls-label">Type</span>
+  </div>
+
+  <div id="tpl-map" role="region" aria-label="Interactive map of historic sites">
+    <div id="tpl-map-status" class="tpl-map-status">Loading map…</div>
+    <div id="tpl-map-empty" class="tpl-map-empty" hidden>No events match this combination.</div>
+  </div>
+
+  <footer class="tpl-map-footer">
+    Click a circle for details.
+    <strong>"Korea (general)"</strong>, <strong>"USA (general)"</strong>, and <strong>"Japan (general)"</strong>
+    group events whose location was recorded only at country level.
+    <strong class="tpl-map-accent">Proclamations</strong>
+    merges entries marked <em>proclamation</em> and <em>declaration</em> in source data.
+  </footer>
+
+  <p class="tpl-map-credit">
+    Data: <a href="./tp-locations.json">tp-locations.json</a> — CC BY-SA 4.0 ·
+    Source: <a href="https://tplegacy.net/">True Parents Legacy archive</a> ·
+    Map tiles: © OpenStreetMap, © CARTO ·
+    Engine: <a href="https://leafletjs.com/">Leaflet</a>
+  </p>
+</section>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
+
+<!-- Map application -->
+<script>
+(function () {
+  'use strict';
+
+  // ============================================================
+  // Configuration
+  // ============================================================
+  const DATA_URL = './tp-locations.json';   // relative path; works on GitHub Pages and local
+  const ACCENT   = '#5E35B1';
+  const TILE_URL = 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png';
+
+  const statusEl  = document.getElementById('tpl-map-status');
+  const emptyMsg  = document.getElementById('tpl-map-empty');
+  const summaryEl = document.getElementById('tpl-summary');
+
+  function fail(msg) {
+    if (statusEl) { statusEl.style.color = '#C62828'; statusEl.textContent = msg; }
+    console.error('[tpl-map]', msg);
+  }
+
+  // ============================================================
+  // Load dataset, then init
+  // ============================================================
+  fetch(DATA_URL)
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status + ' loading ' + DATA_URL);
+      return r.json();
+    })
+    .then(initMap)
+    .catch(err => fail('Could not load dataset. ' + err.message));
+
+  function initMap(dataset) {
+    const DATA        = dataset.locations  || [];
+    const ALL_DECADES = dataset.decades    || [];
+    const TYPES       = dataset.eventTypes || [];
+    const meta        = dataset.metadata   || {};
+
+    if (summaryEl && meta.totalEvents && meta.totalSites) {
+      summaryEl.textContent =
+        meta.totalEvents.toLocaleString() + ' located events across ' +
+        meta.totalSites + ' sites worldwide. ';
+    }
+
+    if (!window.L) return fail('Leaflet did not initialise.');
+    if (statusEl) statusEl.remove();
+
+    const map = L.map('tpl-map', { worldCopyJump: true, scrollWheelZoom: false })
+                 .setView([20, 30], 2);
+
+    L.tileLayer(TILE_URL, {
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
+      maxZoom: 18,
+      subdomains: 'abcd'
+    }).addTo(map);
+
+    let layer = L.layerGroup().addTo(map);
+    let decadeMode = 'all';
+    let typeMode   = 'all';
+
+    const radius = c => c <= 0 ? 0 : Math.max(8, Math.min(40, Math.sqrt(c) * 2.4));
+
+    function countFor(p) {
+      const dec = (decadeMode === 'all') ? p.total : (p.by_decade[decadeMode] || 0);
+      const typ = (typeMode   === 'all') ? p.total : (p.by_type[typeMode]     || 0);
+      if (decadeMode === 'all' && typeMode === 'all') return p.total;
+      if (decadeMode === 'all') return typ;
+      if (typeMode   === 'all') return dec;
+      return (dec > 0) ? typ : 0;
+    }
+
+    function activeLabel() {
+      const parts = [];
+      if (typeMode !== 'all') {
+        const t = TYPES.find(x => x.key === typeMode);
+        if (t) parts.push(t.label.toLowerCase());
+      }
+      if (decadeMode !== 'all') parts.push(decadeMode + 's');
+      return parts.length ? parts.join(' · ') : 'all time';
+    }
+
+    function escapeHTML(s) {
+      return String(s).replace(/[&<>"']/g, c =>
+        ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
+    }
+
+    function render() {
+      layer.clearLayers();
+      let visible = 0;
+
+      DATA.forEach(p => {
+        const count = countFor(p);
+        if (count <= 0) return;
+        visible++;
+
+        const c = L.circleMarker([p.lat, p.lng], {
+          radius:      radius(count),
+          color:       ACCENT,
+          weight:      1.2,
+          fillColor:   ACCENT,
+          fillOpacity: 0.42
+        });
+
+        const decadeRows = Object.keys(p.by_decade).sort().map(d =>
+          '<tr><td style="padding:1px 8px 1px 0;color:#757575;">' + d + 's</td>' +
+          '<td style="text-align:right;font-variant-numeric:tabular-nums;">' +
+          p.by_decade[d] + '</td></tr>'
+        ).join('');
+
+        const typeRows = TYPES
+          .filter(t => p.by_type[t.key])
+          .map(t =>
+            '<tr><td style="padding:1px 8px 1px 0;color:#757575;">' + t.label + '</td>' +
+            '<td style="text-align:right;font-variant-numeric:tabular-nums;">' +
+            p.by_type[t.key] + '</td></tr>'
+          ).join('');
+
+        c.bindPopup(
+          '<div style="font-family:-apple-system,Roboto,sans-serif;min-width:220px;">' +
+            '<div style="font-weight:500;font-size:14px;color:#212121;margin-bottom:6px;">' +
+              escapeHTML(p.name) +
+            '</div>' +
+            '<div style="font-size:12px;color:' + ACCENT + ';margin-bottom:8px;">' +
+              '<strong>' + count + '</strong> event' + (count === 1 ? '' : 's') +
+              ' <span style="color:#9E9E9E;">in current view (' + activeLabel() + ')</span>' +
+            '</div>' +
+            '<div style="font-size:11px;color:#9E9E9E;text-transform:uppercase;letter-spacing:0.5px;margin:8px 0 3px 0;">By decade</div>' +
+            '<table style="font-size:11px;border-collapse:collapse;width:100%;"><tbody>' + decadeRows + '</tbody></table>' +
+            (typeRows
+              ? '<div style="font-size:11px;color:#9E9E9E;text-transform:uppercase;letter-spacing:0.5px;margin:8px 0 3px 0;">By type</div>' +
+                '<table style="font-size:11px;border-collapse:collapse;width:100%;"><tbody>' + typeRows + '</tbody></table>'
+              : '') +
+          '</div>'
+        );
+        c.addTo(layer);
+      });
+
+      if (emptyMsg) emptyMsg.hidden = (visible !== 0);
+      setTimeout(() => map.invalidateSize(), 50);
+    }
+
+    // -------------------- chip controls --------------------
+    function setActive(btn, container) {
+      [...container.querySelectorAll('button')].forEach(x => x.classList.remove('on'));
+      btn.classList.add('on');
+    }
+
+    function makeChip(container, label, val, isActive, onClick) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = label;
+      b.dataset.val = String(val);
+      b.className = 'tpl-map-chip';
+      b.addEventListener('click', () => onClick(val, b));
+      container.appendChild(b);
+      if (isActive) setActive(b, container);
+      return b;
+    }
+
+    const decadeBox = document.getElementById('tpl-map-controls-decade');
+    const typeBox   = document.getElementById('tpl-map-controls-type');
+
+    makeChip(decadeBox, 'All', 'all', true, (val, btn) => {
+      decadeMode = 'all'; setActive(btn, decadeBox); render();
+    });
+    ALL_DECADES.forEach(d =>
+      makeChip(decadeBox, d + 's', d, false, (val, btn) => {
+        decadeMode = Number(val); setActive(btn, decadeBox); render();
+      })
+    );
+
+    makeChip(typeBox, 'All', 'all', true, (val, btn) => {
+      typeMode = 'all'; setActive(btn, typeBox); render();
+    });
+    TYPES.forEach(t =>
+      makeChip(typeBox, t.label, t.key, false, (val, btn) => {
+        typeMode = String(val); setActive(btn, typeBox); render();
+      })
+    );
+
+    render();
+  }
+})();
+</script>
+
+</body>
+</html>
