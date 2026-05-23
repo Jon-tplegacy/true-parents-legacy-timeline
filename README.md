@@ -1,20 +1,3 @@
-## About The Project
-
-This repository contains the source code for the **Interactive Map & Providential Timeline of Sun Myung Moon and Hak Ja Han Moon**, developed as a core visual component of the [True Parents Legacy Archive](https://tplegacy.net).
-
-By leveraging modern web mapping technologies and structured chronological data, this project translates decades of complex global mission history into an intuitive, interactive spatial-temporal experience. It serves as an open-access tool for independent researchers, theologians, and historians to trace the geographical expansion and pivotal turning points of the Unification providence.
-
-### Key Features
-* **Interactive Geo-Tracking:** Visualizes historical travels, speech tours, and the institutional founding locations across the globe.
-* **Providential Chronology:** A comprehensive, searchable timeline mapped across the distinct eras of Unification history (Old, New, and Completed Testament dispensations).
-* **Source-Linked Data:** Every milestone and map node is fully cited and cross-referenced with the official speech corpus (*Malsseum*) and canonical historical texts.
-
-
-demo
-https://tplegacy.net/timeline/
-
-
-
 # True Parents — historical event locations
 
 > Open dataset of geolocated events from the lives and ministry of **Sun Myung Moon** (1920–2012) and **Hak Ja Han Moon** (1943–present), founders of the Unification Movement.
@@ -24,7 +7,7 @@ https://tplegacy.net/timeline/
 
 **4,936 located events across 279 sites worldwide, 1920–2025.**
 
-🌐 **Live demo:** [tplegacy.github.io/tp-event-map](https://tplegacy.github.io/tp-event-map/) *(replace with your actual GitHub Pages URL)*
+🌐 **Live demo:** [jon-tplegacy.github.io/true-parents-legacy-timeline](https://jon-tplegacy.github.io/true-parents-legacy-timeline/)
 📚 **Source archive:** [tplegacy.net/timeline](https://tplegacy.net/timeline/)
 
 ---
@@ -42,26 +25,26 @@ That's it — two files.
 
 ## Quick start
 
-### View the map
+### View the map locally
 
 ```bash
-git clone https://github.com/YOUR_USER/tp-event-map.git
-cd tp-event-map
+git clone https://github.com/Jon-tplegacy/true-parents-legacy-timeline.git
+cd true-parents-legacy-timeline
 python3 -m http.server 8000        # or: npx serve
 ```
 
 Then open <http://localhost:8000/>. (A local server is needed because the HTML uses `fetch()` for the JSON — opening `index.html` directly via `file://` will fail with a CORS error.)
 
-### Host on GitHub Pages
+### Host your own copy on GitHub Pages
 
-1. Push both files to a public repo.
+1. Fork or clone this repo.
 2. **Settings → Pages → Source:** *Deploy from a branch* → `main` / `/ (root)`.
-3. Your map is live at `https://YOUR_USER.github.io/REPO_NAME/`.
+3. Your map is live at `https://<your-username>.github.io/<repo-name>/`.
 
 ### Use the data in your own project
 
 ```js
-const dataset = await fetch('https://YOUR_USER.github.io/REPO_NAME/tp-locations.json')
+const dataset = await fetch('https://jon-tplegacy.github.io/true-parents-legacy-timeline/tp-locations.json')
   .then(r => r.json());
 
 console.log(dataset.metadata.totalEvents);     // 4936
@@ -71,7 +54,8 @@ console.log(dataset.locations[0].by_decade);   // { "1980": 31, "1990": 54, "200
 
 ```python
 import requests
-ds = requests.get('https://YOUR_USER.github.io/REPO_NAME/tp-locations.json').json()
+url = 'https://jon-tplegacy.github.io/true-parents-legacy-timeline/tp-locations.json'
+ds = requests.get(url).json()
 print(len(ds['locations']), 'sites')
 ```
 
@@ -145,7 +129,7 @@ Same — open an issue with the proposed entry and at least one source citation.
 
 If you use this dataset, please cite:
 
-> *True Parents Legacy archive (2026). Sun Myung Moon & Hak Ja Han Moon historical event locations, v1.0.0. https://tplegacy.net/timeline/. CC BY-SA 4.0.*
+> *True Parents Legacy archive (2026). Sun Myung Moon & Hak Ja Han Moon historical event locations, v1.0.0. https://jon-tplegacy.github.io/true-parents-legacy-timeline/. CC BY-SA 4.0.*
 
 ---
 
@@ -154,4 +138,3 @@ If you use this dataset, please cite:
 This data is compiled by the [True Parents Legacy](https://tplegacy.net/) project — an independent digital archive preserving the teachings, sermons, and historical record of the founders of the Unification Movement. The archive is **not affiliated with FFWPU or HSA-UWC**; content is presented for scholarship and historical research under fair use.
 
 For source citations, primary documents, and sermon transcripts behind each event, see the [complete timeline](https://tplegacy.net/timeline/).
-
