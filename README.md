@@ -7,7 +7,7 @@
 
 **4,936 located events across 279 sites worldwide, 1920–2025.**
 
-🌐 **Live demo:** [jon-tplegacy.github.io/true-parents-legacy-timeline](https://jon-tplegacy.github.io/true-parents-legacy-timeline/)
+🌐 **Live demo:** [jon-tplegacy.github.io/True-Parents-life-map](https://jon-tplegacy.github.io/True-Parents-life-map/)
 📚 **Source archive:** [tplegacy.net/timeline](https://tplegacy.net/timeline/)
 
 ---
@@ -44,7 +44,7 @@ Then open <http://localhost:8000/>. (A local server is needed because the HTML u
 ### Use the data in your own project
 
 ```js
-const dataset = await fetch('https://jon-tplegacy.github.io/true-parents-legacy-timeline/tp-locations.json')
+const dataset = await fetch('https://jon-tplegacy.github.io/True-Parents-life-map/tp-locations.json')
   .then(r => r.json());
 
 console.log(dataset.metadata.totalEvents);     // 4936
@@ -54,7 +54,7 @@ console.log(dataset.locations[0].by_decade);   // { "1980": 31, "1990": 54, "200
 
 ```python
 import requests
-url = 'https://jon-tplegacy.github.io/true-parents-legacy-timeline/tp-locations.json'
+url = 'https://jon-tplegacy.github.io/True-Parents-life-map/tp-locations.json'
 ds = requests.get(url).json()
 print(len(ds['locations']), 'sites')
 ```
